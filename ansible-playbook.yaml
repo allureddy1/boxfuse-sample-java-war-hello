@@ -3,7 +3,7 @@
   hosts: tomcat_servers
   vars:
     war_file: hello.war
-    war_src_path: "/var/lib/jenkins/workspace/your-job-name/target/{{ war_file }}"
+    war_src_path: "/var/lib/jenkins/workspace/ansible/target/{{ war_file }}"
     tomcat_webapps_path: /opt/tomcat9/webapps
     tomcat_service_name: tomcat   # Change if your service name differs
 
