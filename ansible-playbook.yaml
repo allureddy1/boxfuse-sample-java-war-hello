@@ -1,32 +1,36 @@
 ---
 - name: Deploy WAR from Jenkins to Tomcat server
   hosts: tomcat_servers
-  become: yes
   vars:
     war_file: hello.war
-    war_src_path: /var/lib/jenkins/workspace/ansible/target/hello-1.0.war
+    war_src_path: "/var/lib/jenkins/workspace/your-job-name/target/{{ war_file }}"
     tomcat_webapps_path: /opt/tomcat9/webapps
-    tomcat_service_name: tomcat
+    tomcat_service_name: tomcat   # Change if your service name differs
 
   tasks:
-    - name: Verify WAR file exists
+    - name: Verify WAR file exists locally
       stat:
         path: "{{ war_src_path }}"
       register: war_stat
       delegate_to: localhost
+      become: no
 
-    - name: Fail if WAR file is missing
+    - name: Fail if WAR file not found
       fail:
-        msg: "WAR file not found at {{ war_src_path }}"
+        msg: "WAR file {{ war_src_path }} not found on Jenkins server."
       when: not war_stat.stat.exists
+      delegate_to: localhost
+      become: no
 
-    - name: Copy WAR file to Tomcat server
+    - name: Copy WAR file to Tomcat webapps directory
       copy:
         src: "{{ war_src_path }}"
         dest: "{{ tomcat_webapps_path }}/{{ war_file }}"
         mode: '0644'
+      become: yes
 
     - name: Restart Tomcat service
       systemd:
         name: "{{ tomcat_service_name }}"
         state: restarted
+      become: yes
